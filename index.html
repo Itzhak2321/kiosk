@@ -3,20 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ניהול חוסרים - קיוסק</title>
+    <title>ניהול חוסרים - מצב לילה</title>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
     
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding-bottom: 160px; }
-        .header { background: #2c3e50; color: white; text-align: center; padding: 12px; font-size: 1.1em; font-weight: bold; }
+        /* צבעי בסיס למצב לילה */
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #121212; /* רקע שחור עמוק */
+            color: #e0e0e0; 
+            margin: 0; 
+            padding-bottom: 160px; 
+        }
         
-        .tabs { display: flex; background: #fff; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .tab { flex: 1; text-align: center; padding: 12px; cursor: pointer; color: #7f8c8d; border-bottom: 3px solid transparent; transition: 0.3s; font-size: 14px; font-weight: bold; }
-        .tab.active { color: #2980b9; border-bottom-color: #2980b9; background: #f9f9f9; }
+        .header { 
+            background: #1f1f1f; 
+            color: #bb86fc; /* סגול "ניאון" עדין שמתאים ללילה */
+            text-align: center; 
+            padding: 12px; 
+            font-size: 1.1em; 
+            font-weight: bold; 
+            border-bottom: 1px solid #333;
+        }
         
-        .search-container { padding: 8px 12px; background: #fff; border-bottom: 1px solid #ddd; }
-        #searchInput { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-size: 14px; outline: none; }
+        .tabs { 
+            display: flex; 
+            background: #1f1f1f; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5); 
+        }
+        .tab { 
+            flex: 1; 
+            text-align: center; 
+            padding: 12px; 
+            cursor: pointer; 
+            color: #888; 
+            border-bottom: 3px solid transparent; 
+            transition: 0.3s; 
+            font-size: 14px; 
+            font-weight: bold; 
+        }
+        .tab.active { 
+            color: #03dac6; /* טורקיז בוהק */
+            border-bottom-color: #03dac6; 
+            background: #252525; 
+        }
+        
+        .search-container { 
+            padding: 8px 12px; 
+            background: #121212; 
+            border-bottom: 1px solid #333; 
+        }
+        #searchInput { 
+            width: 100%; 
+            padding: 8px; 
+            border-radius: 6px; 
+            border: 1px solid #333; 
+            background: #1f1f1f; 
+            color: #fff; 
+            box-sizing: border-box; 
+            font-size: 14px; 
+            outline: none; 
+        }
 
         .shelf-container { display: none; padding: 10px; }
         .shelf-container.active { display: block; }
@@ -27,59 +78,135 @@
             gap: 8px; 
         }
         
+        /* עיצוב הקוביות בלילה */
         .item { 
-            background: white; padding: 12px 4px; border-radius: 8px; text-align: center; 
-            border: 1px solid #ddd; cursor: pointer; position: relative; 
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; 
-            justify-content: center; min-height: 65px; overflow: hidden;
+            background: #1e1e1e; 
+            padding: 12px 4px; 
+            border-radius: 8px; 
+            text-align: center; 
+            border: 1px solid #333; 
+            cursor: pointer; 
+            position: relative; 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.4); 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            min-height: 65px; 
+            overflow: hidden;
+            color: #e0e0e0;
         }
         
-        .item.has-qty { background: #d5f5e3; border-color: #27ae60; border-width: 2px; order: -1; }
+        /* פריט חסר - ירוק כהה ועמוק */
+        .item.has-qty { 
+            background: #1b3a2a; 
+            border-color: #03dac6; 
+            border-width: 2px; 
+            order: -1; 
+        }
         
         .delete-btn { 
-            position: absolute; top: 0; left: 0; background: rgba(0, 0, 0, 0.05); color: #ff4d4d; 
-            border: none; border-bottom-right-radius: 8px; width: 22px; height: 22px; font-size: 16px; 
-            cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold;
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            background: rgba(255, 255, 255, 0.05); 
+            color: #cf6679; /* אדום פסטלי למצב לילה */
+            border: none; 
+            border-bottom-right-radius: 8px; 
+            width: 22px; 
+            height: 22px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-weight: bold;
         }
 
-        .qty-badge { background: #27ae60; color: white; border-radius: 4px; font-size: 11px; margin-top: 5px; padding: 2px; font-weight: bold; }
+        .qty-badge { 
+            background: #03dac6; 
+            color: #000; 
+            border-radius: 4px; 
+            font-size: 11px; 
+            margin-top: 5px; 
+            padding: 2px; 
+            font-weight: bold; 
+        }
 
         .add-area { text-align: center; margin-bottom: 12px; }
-        .btn-add { background: #2980b9; color: white; border: none; padding: 8px 18px; border-radius: 20px; font-weight: bold; font-size: 13px; }
+        .btn-add { 
+            background: #3700b3; 
+            color: white; 
+            border: none; 
+            padding: 8px 18px; 
+            border-radius: 20px; 
+            font-weight: bold; 
+            font-size: 13px; 
+        }
         
-        .footer { position: fixed; bottom: 0; width: 100%; background: white; padding: 12px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 -3px 10px rgba(0,0,0,0.1); }
-        .summary-btn { background: #e67e22; color: white; padding: 12px; border-radius: 8px; border: none; font-weight: bold; font-size: 1em; cursor: pointer; }
-        .btn-clear { background: #95a5a6; color: white; padding: 6px; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; }
+        .footer { 
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            background: #1f1f1f; 
+            padding: 12px; 
+            box-sizing: border-box; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
+            box-shadow: 0 -3px 10px rgba(0,0,0,0.5); 
+            border-top: 1px solid #333;
+        }
+        .summary-btn { 
+            background: #bb86fc; 
+            color: #000; 
+            padding: 12px; 
+            border-radius: 8px; 
+            border: none; 
+            font-weight: bold; 
+            font-size: 1em; 
+            cursor: pointer; 
+        }
+        .btn-clear { 
+            background: #333; 
+            color: #888; 
+            padding: 6px; 
+            border: none; 
+            border-radius: 6px; 
+            font-size: 12px; 
+            cursor: pointer; 
+        }
 
-        /* עיצוב המודל (רשימת סיכום) */
+        /* מודל סיכום מצב לילה */
         .modal {
             display: none; position: fixed; z-index: 1000; left: 0; top: 0; 
-            width: 100%; height: 100%; background-color: rgba(0,0,0,0.6);
+            width: 100%; height: 100%; background-color: rgba(0,0,0,0.8);
         }
         .modal-content {
-            background-color: white; margin: 10% auto; padding: 20px; 
+            background-color: #1e1e1e; margin: 10% auto; padding: 20px; 
             border-radius: 15px; width: 85%; max-height: 75vh; overflow-y: auto; 
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+            color: #e0e0e0;
         }
         .modal-header { 
-            border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; 
-            margin-bottom: 15px; font-weight: bold; font-size: 1.2em; text-align: center; color: #2c3e50;
+            border-bottom: 1px solid #333; padding-bottom: 10px; 
+            margin-bottom: 15px; font-weight: bold; font-size: 1.2em; text-align: center; color: #bb86fc;
         }
         .summary-item { 
             display: flex; justify-content: space-between; align-items: center; 
-            padding: 12px 0; border-bottom: 1px solid #eee;
+            padding: 12px 0; border-bottom: 1px solid #333;
         }
-        .summary-qty { font-weight: bold; color: #27ae60; background: #eafaf1; padding: 2px 8px; border-radius: 4px; }
-        .done-btn { background: #f0f2f5; border: none; padding: 5px 10px; border-radius: 5px; color: #95a5a6; cursor: pointer; font-size: 12px; }
+        .summary-qty { font-weight: bold; color: #03dac6; background: #1b3a2a; padding: 2px 8px; border-radius: 4px; }
+        .done-btn { background: #333; border: none; padding: 5px 10px; border-radius: 5px; color: #03dac6; cursor: pointer; font-size: 12px; font-weight: bold; }
         .close-modal { 
-            background: #2c3e50; color: white; border: none; padding: 12px; 
+            background: #333; color: #bb86fc; border: 1px solid #bb86fc; padding: 12px; 
             width: 100%; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-<div class="header">ניהול חוסרים</div>
+<div class="header">ניהול חוסרים - מצב לילה</div>
 
 <div class="tabs">
     <div class="tab active" onclick="showTab('snacks', this)">חטיפים</div>
@@ -139,7 +266,6 @@
     db.ref('/').on('value', (snapshot) => {
         lastData = snapshot.val() || { products: {}, currentOrder: {} };
         renderUI();
-        // עדכון הרשימה בתוך המודל אם הוא פתוח
         if(document.getElementById('summaryModal').style.display === 'block') {
             updateSummaryList(lastData.currentOrder);
         }
@@ -166,7 +292,7 @@
                             ${qty ? `<div class="qty-badge">${qty}</div>` : ''}
                         `;
                         div.onclick = () => {
-                            const newQty = prompt(`כמה חסר מ-${name}?`, qty);
+                            const newQty = prompt(`כמה להוריד מ-${name}?`, qty);
                             if (newQty !== null) db.ref(`currentOrder/${name}`).set(newQty === "" ? null : newQty);
                         };
                         container.appendChild(div);
@@ -200,7 +326,6 @@
         renderUI();
     }
 
-    // פונקציות המודל (רשימת סיכום)
     function showSummary() {
         updateSummaryList(lastData.currentOrder);
         document.getElementById('summaryModal').style.display = 'block';
@@ -210,7 +335,7 @@
         const listDiv = document.getElementById('summaryList');
         listDiv.innerHTML = '';
         if (!order || Object.keys(order).length === 0) {
-            listDiv.innerHTML = '<p style="text-align:center; color:#7f8c8d;">אין חוסרים כרגע, המדפים מלאים!</p>';
+            listDiv.innerHTML = '<p style="text-align:center; color:#888;">המדפים מלאים!</p>';
         } else {
             for (let key in order) {
                 listDiv.innerHTML += `
