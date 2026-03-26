@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ניהול מלאי: קומה 1 & 2</title>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; margin: 0; padding-bottom: 140px; }
+        .header { background: #2c3e50; color: white; text-align: center; padding: 15px; font-size: 1.1em; font-weight: bold; }
+        
+        .tabs { display: flex; background: #fff; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .tab { flex: 1; text-align: center; padding: 15px; cursor: pointer; color: #7f8c8d; border-bottom: 3px solid transparent; transition: 0.3s; }
+        .tab.active { color: #2980b9; border-bottom-color: #2980b9; background: #f9f9f9; }
+        
+        .shelf-container { display: none; padding: 15px; }
+        .shelf-container.active { display: block; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(105px, 1fr)); gap: 10px; }
+        
+        .item { 
+            background: white; padding: 15px 5px; border-radius: 12px; text-align: center; 
+            border: 1px solid #ddd; cursor: pointer; position: relative; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; min-height: 70px;
+        }
+        .item.has-qty { background: #d5f5e3; border-color: #27ae60; }
+        
+        .delete-btn { 
+            position: absolute; top: 2px; left: 2px; background: #ff4d4d; color: white; 
+            border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+
+        .qty-badge { background: #27ae60; color: white; border-radius: 5px; font-size: 13px; margin-top: 5px; padding: 3px; font-weight: bold; }
+
+        .add-area { text-align: center; margin-bottom: 20px; }
+        .btn-add { background: #2980b9; color: white; border: none; padding: 10px 25px; border-radius: 30px; font-weight: bold; }
+        
+        .footer { position: fixed; bottom: 0; width: 100%; background: white; padding: 15px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 -4px 12px rgba(0,0,0,0.1); }
+        .summary-btn { background: #e67e22; color: white; padding: 14px; border-radius: 10px; border: none; font-weight: bold; font-size: 1.1em; }
+        .btn-clear { background: #95a5a6; color: white; padding: 8px; border: none; border-radius: 6px; }
+    </style>
+</head>
+<body>
+
+<div class="header">מערכת חוסרים: קיוסק יצחק</div>
+
+<div class="tabs">
+    <div class="tab active" onclick="showTab('snacks', this)">חטיפים</div>
+    <div class="tab" onclick="showTab('cigarettes', this)">סיגריות</div>
+    <div class="tab" onclick="showTab('general', this)">כללי</div>
+</div>
+
+<div id="snacks" class="shelf-container active">
+    <div class="add-area"><button class="btn-add" onclick="addNewProduct('snacks')">+ הוסף חטיף</button></div>
+    <div class="grid"></div>
+</div>
+
+<div id="cigarettes" class="shelf-container">
+    <div class="add-area"><button class="btn-add" onclick="addNewProduct('cigarettes')">+ הוסף סיגריה</button></div>
+    <div class="grid"></div>
+</div>
+
+<div id="general" class="shelf-container">
+    <div class="add-area"><button class="btn-add" onclick="addNewProduct('general')">+ הוסף מוצר</button></div>
+    <div class="grid"></div>
+</div>
+
+<div class="footer">
+    <button class="summary-btn" onclick="showSummary()">הצג רשימת הורדה (קומה 2)</button>
+    <button class="btn-clear" onclick="clearAllOrders()">איפוס רשימה (בוצע)</button>
+</div>
+
+<script>
+    // הגדרות FIREBASE - תחליף בפרטים שלך
+    const firebaseConfig = {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_PROJECT.firebaseapp.com",
+        databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+        projectId: "YOUR_PROJECT",
+        appId: "YOUR_APP_ID"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // האזנה לשינויים
+    db.ref('/').on('value', (snapshot) => {
+        const val = snapshot.val() || {};
+        renderUI(val.products || {}, val.currentOrder || {});
+    });
+
+    function renderUI(products, currentOrder) {
+        ['snacks', 'cigarettes', 'general'].forEach(cat => {
+            const container = document.querySelector(`#${cat} .grid`);
+            container.innerHTML = '';
+            if (products[cat]) {
+                Object.keys(products[cat]).forEach(name => {
+                    const qty = currentOrder[name] || "";
+                    const div = document.createElement('div');
+                    div.className = `item ${qty ? 'has-qty' : ''}`;
+                    div.innerHTML = `
+                        <button class="delete-btn" onclick="deleteProduct('${cat}', '${name}', event)">X</button>
+                        <div style="font-size: 14px; font-weight: 500;">${name}</div>
+                        ${qty ? `<div class="qty-badge">${qty}</div>` : ''}
+                    `;
+                    div.onclick = () => {
+                        const newQty = prompt(`כמות חסרה ל-${name}:`, qty);
+                        if (newQty !== null) db.ref(`currentOrder/${name}`).set(newQty === "" ? null : newQty);
+                    };
+                    container.appendChild(div);
+                });
+            }
+        });
+    }
+
+    function addNewProduct(category) {
+        const name = prompt("שם המוצר החדש:");
+        if (name && name.trim() !== "") db.ref(`products/${category}/${name}`).set(true);
+    }
+
+    function deleteProduct(category, name, event) {
+        event.stopPropagation(); // מונע מהלחיצה לפתוח את ה-Prompt של הכמות
+        if (confirm(`למחוק את ${name} מהרשימה הקבועה?`)) {
+            db.ref(`products/${category}/${name}`).remove();
+            db.ref(`currentOrder/${name}`).remove();
+        }
+    }
+
+    function showTab(cat, el) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.shelf-container').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById(cat).classList.add('active');
+    }
+
+    function showSummary() {
+        db.ref('currentOrder').once('value', (snapshot) => {
+            const order = snapshot.val();
+            if (!order) return alert("אין פריטים להוריד כרגע.");
+            let list = "ללהוריד מהמחסן (קומה 2):\n";
+            for (let key in order) list += `• ${key}: ${order[key]}\n`;
+            alert(list);
+        });
+    }
+
+    function clearAllOrders() {
+        if(confirm("סיימת להוריד? כל הכמויות יתאפסו.")) db.ref('currentOrder').set(null);
+    }
+</script>
+</body>
+</html>
