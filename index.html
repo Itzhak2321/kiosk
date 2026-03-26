@@ -16,12 +16,11 @@
         .tab.active { color: #2980b9; border-bottom-color: #2980b9; background: #f9f9f9; }
         
         .search-container { padding: 8px 12px; background: #fff; border-bottom: 1px solid #ddd; }
-        #searchInput { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-size: 14px; }
+        #searchInput { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; font-size: 14px; outline: none; }
 
         .shelf-container { display: none; padding: 10px; }
         .shelf-container.active { display: block; }
         
-        /* 3 בשורה */
         .grid { 
             display: grid; 
             grid-template-columns: repeat(3, 1fr); 
@@ -29,30 +28,53 @@
         }
         
         .item { 
-            background: white; padding: 10px 4px; border-radius: 8px; text-align: center; 
+            background: white; padding: 12px 4px; border-radius: 8px; text-align: center; 
             border: 1px solid #ddd; cursor: pointer; position: relative; 
             box-shadow: 0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; 
-            justify-content: center; min-height: 60px; overflow: hidden;
+            justify-content: center; min-height: 65px; overflow: hidden;
         }
         
         .item.has-qty { background: #d5f5e3; border-color: #27ae60; border-width: 2px; order: -1; }
         
-        /* כפתור מחיקה עדין */
         .delete-btn { 
-            position: absolute; top: 0; left: 0; background: rgba(255, 77, 77, 0.1); color: #ff4d4d; 
-            border: none; border-bottom-right-radius: 8px; width: 22px; height: 22px; font-size: 14px; 
+            position: absolute; top: 0; left: 0; background: rgba(0, 0, 0, 0.05); color: #ff4d4d; 
+            border: none; border-bottom-right-radius: 8px; width: 22px; height: 22px; font-size: 16px; 
             cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: bold;
         }
-        .delete-btn:hover { background: #ff4d4d; color: white; }
 
-        .qty-badge { background: #27ae60; color: white; border-radius: 4px; font-size: 11px; margin-top: 4px; padding: 2px; font-weight: bold; }
+        .qty-badge { background: #27ae60; color: white; border-radius: 4px; font-size: 11px; margin-top: 5px; padding: 2px; font-weight: bold; }
 
         .add-area { text-align: center; margin-bottom: 12px; }
         .btn-add { background: #2980b9; color: white; border: none; padding: 8px 18px; border-radius: 20px; font-weight: bold; font-size: 13px; }
         
         .footer { position: fixed; bottom: 0; width: 100%; background: white; padding: 12px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 -3px 10px rgba(0,0,0,0.1); }
-        .summary-btn { background: #e67e22; color: white; padding: 12px; border-radius: 8px; border: none; font-weight: bold; font-size: 1em; }
-        .btn-clear { background: #95a5a6; color: white; padding: 6px; border: none; border-radius: 6px; font-size: 12px; }
+        .summary-btn { background: #e67e22; color: white; padding: 12px; border-radius: 8px; border: none; font-weight: bold; font-size: 1em; cursor: pointer; }
+        .btn-clear { background: #95a5a6; color: white; padding: 6px; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; }
+
+        /* עיצוב המודל (רשימת סיכום) */
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0; 
+            width: 100%; height: 100%; background-color: rgba(0,0,0,0.6);
+        }
+        .modal-content {
+            background-color: white; margin: 10% auto; padding: 20px; 
+            border-radius: 15px; width: 85%; max-height: 75vh; overflow-y: auto; 
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-header { 
+            border-bottom: 2px solid #f0f2f5; padding-bottom: 10px; 
+            margin-bottom: 15px; font-weight: bold; font-size: 1.2em; text-align: center; color: #2c3e50;
+        }
+        .summary-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 12px 0; border-bottom: 1px solid #eee;
+        }
+        .summary-qty { font-weight: bold; color: #27ae60; background: #eafaf1; padding: 2px 8px; border-radius: 4px; }
+        .done-btn { background: #f0f2f5; border: none; padding: 5px 10px; border-radius: 5px; color: #95a5a6; cursor: pointer; font-size: 12px; }
+        .close-modal { 
+            background: #2c3e50; color: white; border: none; padding: 12px; 
+            width: 100%; border-radius: 8px; margin-top: 15px; font-weight: bold; cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -84,13 +106,20 @@
     <div class="grid" id="grid-general"></div>
 </div>
 
+<div id="summaryModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">רשימת חוסרים למילוי</div>
+        <div id="summaryList"></div>
+        <button class="close-modal" onclick="closeModal()">סגור חלון</button>
+    </div>
+</div>
+
 <div class="footer">
     <button class="summary-btn" onclick="showSummary()">הצג רשימה להורדה</button>
     <button class="btn-clear" onclick="clearAllOrders()">איפוס הכל (בוצע)</button>
 </div>
 
 <script>
-    // הגדרות FIREBASE שלך
     const firebaseConfig = {
         apiKey: "AIzaSyBrAIYc9yqbLvCN-0nKmls_vPsTaj6wuNo",
         authDomain: "kiosk-inventory.firebaseapp.com",
@@ -110,6 +139,10 @@
     db.ref('/').on('value', (snapshot) => {
         lastData = snapshot.val() || { products: {}, currentOrder: {} };
         renderUI();
+        // עדכון הרשימה בתוך המודל אם הוא פתוח
+        if(document.getElementById('summaryModal').style.display === 'block') {
+            updateSummaryList(lastData.currentOrder);
+        }
     });
 
     function renderUI() {
@@ -122,18 +155,18 @@
             if (!container) return;
             container.innerHTML = '';
             if (products[cat]) {
-                Object.keys(products[cat]).forEach(name => {
+                Object.keys(products[cat]).sort().forEach(name => {
                     if (name.toLowerCase().includes(searchTerm)) {
                         const qty = currentOrder[name] || "";
                         const div = document.createElement('div');
                         div.className = `item ${qty ? 'has-qty' : ''}`;
                         div.innerHTML = `
                             <button class="delete-btn" onclick="deleteProduct('${cat}', '${name}', event)">×</button>
-                            <div style="font-size: 12px; font-weight: bold; line-height: 1.2;">${name}</div>
+                            <div style="font-size: 13px; font-weight: bold; line-height: 1.1;">${name}</div>
                             ${qty ? `<div class="qty-badge">${qty}</div>` : ''}
                         `;
                         div.onclick = () => {
-                            const newQty = prompt(`כמה להוריד מ-${name}?`, qty);
+                            const newQty = prompt(`כמה חסר מ-${name}?`, qty);
                             if (newQty !== null) db.ref(`currentOrder/${name}`).set(newQty === "" ? null : newQty);
                         };
                         container.appendChild(div);
@@ -167,14 +200,39 @@
         renderUI();
     }
 
+    // פונקציות המודל (רשימת סיכום)
     function showSummary() {
-        db.ref('currentOrder').once('value', (snapshot) => {
-            const order = snapshot.val();
-            if (!order) return alert("אין מה להוריד כרגע.");
-            let list = "רשימת חוסרים:\n";
-            for (let key in order) list += `• ${key}: ${order[key]}\n`;
-            alert(list);
-        });
+        updateSummaryList(lastData.currentOrder);
+        document.getElementById('summaryModal').style.display = 'block';
+    }
+
+    function updateSummaryList(order) {
+        const listDiv = document.getElementById('summaryList');
+        listDiv.innerHTML = '';
+        if (!order || Object.keys(order).length === 0) {
+            listDiv.innerHTML = '<p style="text-align:center; color:#7f8c8d;">אין חוסרים כרגע, המדפים מלאים!</p>';
+        } else {
+            for (let key in order) {
+                listDiv.innerHTML += `
+                    <div class="summary-item">
+                        <button class="done-btn" onclick="markDone('${key}')">V</button>
+                        <span style="flex:1; margin-right:10px;">${key}</span>
+                        <span class="summary-qty">${order[key]}</span>
+                    </div>`;
+            }
+        }
+    }
+
+    function markDone(productName) {
+        db.ref(`currentOrder/${productName}`).remove();
+    }
+
+    function closeModal() {
+        document.getElementById('summaryModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target == document.getElementById('summaryModal')) closeModal();
     }
 
     function clearAllOrders() {
