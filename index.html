@@ -18,7 +18,7 @@
             --text: #e0e0e0;
         }
 
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 180px; direction: rtl; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 120px; direction: rtl; }
         .header { background: var(--surface); color: var(--primary); text-align: center; padding: 15px; font-weight: bold; border-bottom: 1px solid #333; position: sticky; top: 0; z-index: 100; }
         
         .tabs { display: flex; background: var(--surface); border-bottom: 1px solid #333; position: sticky; top: 52px; z-index: 100; }
@@ -26,9 +26,8 @@
         .tab.active { color: var(--secondary); border-bottom-color: var(--secondary); background: #252525; }
         
         .search-container { padding: 10px; }
-        #searchInput { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #333; background: var(--surface); color: #fff; box-sizing: border-box; font-size: 16px; }
+        #searchInput { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #333; background: var(--surface); color: #fff; box-sizing: border-box; font-size: 16px; outline: none; }
 
-        /* הסתרת קטגוריות לא פעילות */
         .shelf-container { display: none; padding: 10px; }
         .shelf-container.active { display: block; }
         
@@ -46,30 +45,28 @@
 
         .item-img { width: 100%; height: 80px; object-fit: cover; background: #2a2a2a; }
         .item-name { font-weight: bold; font-size: 12px; padding: 5px; flex-grow: 1; display: flex; align-items: center; justify-content: center; }
-
         .delete-btn { position: absolute; top: 0; left: 0; background: rgba(0,0,0,0.6); color: var(--error); border: none; width: 32px; height: 32px; border-bottom-right-radius: 12px; font-size: 20px; z-index: 5; }
-
         .qty-badge { background: var(--secondary); color: #000; border-radius: 4px; font-size: 12px; margin: 0 5px 5px; padding: 2px; font-weight: bold; }
         .exp-tag { font-size: 10px; background: rgba(0,0,0,0.6); margin-bottom: 4px; border-radius: 4px; padding: 1px; font-weight: bold; }
 
         /* מודלים */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(5px); }
-        .modal-content { background: var(--surface); margin: 15% auto; padding: 25px; border-radius: 20px; width: 85%; max-width: 350px; text-align: center; border: 1px solid #444; }
-        
+        .modal-content { background: var(--surface); margin: 10% auto; padding: 25px; border-radius: 20px; width: 90%; max-width: 380px; text-align: center; border: 1px solid #444; box-sizing: border-box; }
         .modal-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #444; background: #121212; color: white; text-align: center; font-size: 16px; box-sizing: border-box; }
-        input[type="date"] { color-scheme: dark; }
-
-        .quick-qty-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0; }
-        .btn-quick { background: #333; color: var(--secondary); border: 1px solid #444; padding: 15px 0; border-radius: 10px; font-weight: bold; font-size: 18px; }
-
+        
         .btn-confirm { width: 100%; background: var(--secondary); color: black; border: none; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; }
         .btn-cancel { width: 100%; background: transparent; color: #888; border: none; padding: 10px; margin-top: 5px; cursor: pointer; }
         .btn-danger { background: var(--error); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; }
 
-        /* רשימת סיכום */
-        .summary-item { display: flex; align-items: center; padding: 10px; background: #252525; margin-bottom: 8px; border-radius: 12px; border: 1px solid #333; }
-        .summary-img { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; margin-left: 10px; border: 1px solid #444; }
-        .v-btn { background: var(--secondary); color: black; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 20px; flex-shrink: 0; }
+        /* עיצוב רשימת סיכום */
+        .summary-list-container { text-align: right; margin-top: 10px; }
+        .summary-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; background: #2a2a2a; margin-bottom: 10px; border-radius: 15px; border: 1px solid #383838; }
+        .summary-right { display: flex; align-items: center; flex: 1; }
+        .summary-img { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; margin-left: 12px; border: 1px solid #444; }
+        .summary-text { display: flex; flex-direction: column; }
+        .summary-name { font-weight: bold; font-size: 16px; color: #fff; }
+        .summary-qty { color: var(--secondary); font-size: 14px; font-weight: bold; }
+        .v-btn { background: var(--secondary); color: black; border: none; width: 42px; height: 42px; border-radius: 50%; font-size: 20px; font-weight: bold; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.4); }
 
         .footer { position: fixed; bottom: 0; width: 100%; background: var(--surface); padding: 15px; border-top: 1px solid #333; z-index: 90; box-sizing: border-box; }
         .summary-btn { background: var(--primary); color: #000; padding: 16px; border-radius: 15px; border: none; font-weight: bold; font-size: 1.1em; width: 100%; cursor: pointer; }
@@ -80,13 +77,13 @@
 <div class="header">ניהול חוסרים Pro Vision</div>
 
 <div class="tabs">
-    <div class="tab active" data-cat="snacks" onclick="showTab('snacks', this)">חטיפים</div>
-    <div class="tab" data-cat="cigarettes" onclick="showTab('cigarettes', this)">סיגריות</div>
-    <div class="tab" data-cat="general" onclick="showTab('general', this)">כללי</div>
+    <div class="tab active" onclick="showTab('snacks', this)">חטיפים</div>
+    <div class="tab" onclick="showTab('cigarettes', this)">סיגריות</div>
+    <div class="tab" onclick="showTab('general', this)">כללי</div>
 </div>
 
 <div class="search-container">
-    <input type="text" id="searchInput" placeholder="חיפוש מהיר..." oninput="renderUI()">
+    <input type="text" id="searchInput" placeholder="חיפוש מוצר..." oninput="renderUI()">
 </div>
 
 <div id="snacks" class="shelf-container active"><div class="grid" id="grid-snacks"></div></div>
@@ -97,56 +94,52 @@
 
 <div id="alertModal" class="modal">
     <div class="modal-content">
-        <div id="alertIcon" style="font-size:50px;">🗑️</div>
-        <div id="alertTitle" style="color:var(--error); font-weight:bold; font-size:1.3em; margin:10px 0;">אישור פעולה</div>
+        <div id="alertIcon" style="font-size:50px; margin-bottom:10px;">⚠️</div>
+        <div id="alertTitle" style="color:var(--error); font-weight:bold; font-size:1.4em;">אישור</div>
         <p id="alertText" style="color:#aaa; margin-bottom:20px;"></p>
-        <button class="btn-danger" id="alertOkBtn">כן, בצע</button>
+        <button class="btn-danger" id="alertOkBtn">בצע</button>
         <button class="btn-cancel" onclick="closeAllModals()">ביטול</button>
+    </div>
+</div>
+
+<div id="summaryModal" class="modal">
+    <div class="modal-content" style="max-height:90vh; width:95%; overflow-y:auto;">
+        <div style="color:var(--primary); font-weight:bold; margin-bottom:20px; font-size:1.5em; border-bottom:1px solid #333; padding-bottom:10px;">📋 רשימת חוסרים</div>
+        <div id="summaryList" class="summary-list-container"></div>
+        <div style="margin-top:25px; display:flex; flex-direction:column; gap:10px;">
+            <button class="btn-danger" style="background:#4a1515;" onclick="askClearAll()">🗑️ נקה את כל הרשימה</button>
+            <button class="btn-confirm" style="background:#333; color:white;" onclick="closeAllModals()">סגור</button>
+        </div>
     </div>
 </div>
 
 <div id="qtyModal" class="modal">
     <div class="modal-content">
-        <div id="qtyTitle" style="color:var(--primary); font-weight:bold; font-size:1.3em;"></div>
-        <div class="quick-qty-grid">
-            <button class="btn-quick" onclick="setQuickQty('1')">1</button>
-            <button class="btn-quick" onclick="setQuickQty('2')">2</button>
-            <button class="btn-quick" onclick="setQuickQty('3')">3</button>
-            <button class="btn-quick" onclick="setQuickQty('4')">4</button>
-            <button class="btn-quick" onclick="setQuickQty('5')">5</button>
-            <button class="btn-quick" onclick="setQuickQty('6')">6</button>
+        <div id="qtyTitle" style="color:var(--primary); font-weight:bold; font-size:1.4em; margin-bottom:15px;"></div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom:15px;">
+            <button class="btn-confirm" style="background:#333; color:var(--secondary);" onclick="setQuickQty('1')">1</button>
+            <button class="btn-confirm" style="background:#333; color:var(--secondary);" onclick="setQuickQty('2')">2</button>
+            <button class="btn-confirm" style="background:#333; color:var(--secondary);" onclick="setQuickQty('3')">3</button>
         </div>
-        <input type="text" id="qtyInput" class="modal-input" placeholder="כמות חסרה...">
-        <div style="font-size:12px; color:var(--primary); margin-top:10px;">תאריך תפוגה:</div>
+        <input type="text" id="qtyInput" class="modal-input" placeholder="כמות...">
         <input type="date" id="expInput" class="modal-input">
-        <button class="btn-confirm" id="qtyConfirmBtn">שמור</button>
-        <button class="btn-cancel" onclick="closeAllModals()">סגור</button>
-    </div>
-</div>
-
-<div id="summaryModal" class="modal">
-    <div class="modal-content" style="max-height:85vh; width:95%; overflow-y:auto;">
-        <div style="color:var(--primary); font-weight:bold; margin-bottom:20px; font-size:1.4em;">📦 רשימת חוסרים</div>
-        <div id="summaryList"></div>
-        <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
-            <button class="btn-danger" style="background:#4a1515;" onclick="askClearAll()">🗑️ נקה את כל הרשימה</button>
-            <button class="btn-confirm" onclick="closeAllModals()">חזור</button>
-        </div>
+        <button class="btn-confirm" id="qtyConfirmBtn">עדכן</button>
+        <button class="btn-cancel" onclick="closeAllModals()">ביטול</button>
     </div>
 </div>
 
 <div id="addModal" class="modal">
     <div class="modal-content">
-        <div style="color:var(--primary); font-weight:bold; margin-bottom:10px;">הוספת מוצר</div>
+        <div style="color:var(--primary); font-weight:bold; margin-bottom:15px;">הוספת מוצר חדש</div>
         <select id="addCat" class="modal-input">
             <option value="snacks">חטיפים</option>
             <option value="cigarettes">סיגריות</option>
             <option value="general">כללי</option>
         </select>
         <input type="text" id="newName" class="modal-input" placeholder="שם המוצר">
-        <input type="text" id="newImg" class="modal-input" placeholder="קישור לתמונה">
+        <input type="text" id="newImg" class="modal-input" placeholder="לינק לתמונה">
         <input type="date" id="newExp" class="modal-input">
-        <button class="btn-confirm" id="addConfirmBtn" onclick="saveNewProduct()">שמור</button>
+        <button class="btn-confirm" onclick="saveNewProduct()">שמור מוצר</button>
         <button class="btn-cancel" onclick="closeAllModals()">ביטול</button>
     </div>
 </div>
@@ -192,8 +185,6 @@
             grid.innerHTML = '';
             
             const catProds = (localData.products && localData.products[cat]) ? localData.products[cat] : {};
-            
-            // מיון: קודם עם כמות, אחר כך א-ב
             const sorted = Object.keys(catProds).sort((a, b) => {
                 const qtyA = (localData.currentOrder && localData.currentOrder[a]) ? 1 : 0;
                 const qtyB = (localData.currentOrder && localData.currentOrder[b]) ? 1 : 0;
@@ -256,37 +247,22 @@
 
     function askDelete(cat, name, e) {
         e.stopPropagation();
-        const modal = document.getElementById('alertModal');
         document.getElementById('alertText').innerText = `למחוק את ${name} מהמערכת?`;
         document.getElementById('alertOkBtn').onclick = () => {
             db.ref(`products/${cat}/${name}`).remove();
             db.ref(`currentOrder/${name}`).remove();
             closeAllModals();
         };
-        modal.style.display = 'block';
+        document.getElementById('alertModal').style.display = 'block';
     }
 
     function askClearAll() {
-        const modal = document.getElementById('alertModal');
         document.getElementById('alertText').innerText = "זה ימחק את כל רשימת החוסרים (כמויות) שסימנת. בטוח?";
         document.getElementById('alertOkBtn').onclick = () => {
             db.ref('currentOrder').set(null);
             closeAllModals();
         };
-        modal.style.display = 'block';
-    }
-
-    function openAddModal() { document.getElementById('addModal').style.display = 'block'; }
-
-    function saveNewProduct() {
-        const cat = document.getElementById('addCat').value;
-        const name = document.getElementById('newName').value.trim();
-        const img = document.getElementById('newImg').value.trim();
-        const exp = document.getElementById('newExp').value;
-        if(name) db.ref(`products/${cat}/${name}`).set({ img, exp });
-        closeAllModals();
-        document.getElementById('newName').value = "";
-        document.getElementById('newImg').value = "";
+        document.getElementById('alertModal').style.display = 'block';
     }
 
     function showSummary() {
@@ -294,26 +270,38 @@
         list.innerHTML = '';
         const order = localData.currentOrder || {};
         const keys = Object.keys(order);
-        if(keys.length === 0) { list.innerHTML = "<p style='opacity:0.5; padding:20px;'>אין חוסרים</p>"; return; }
-        
-        keys.forEach(k => {
-            let imgUrl = "";
-            for(let cat in localData.products) {
-                if(localData.products[cat][k]) imgUrl = localData.products[cat][k].img;
-            }
-            list.innerHTML += `
-                <div class="summary-item">
-                    <button class="v-btn" onclick="db.ref('currentOrder/${k}').remove()">✓</button>
-                    <div style="flex:1; text-align:right; margin:0 15px;">
-                        <span style="font-weight:bold; display:block;">${k}</span>
-                        <span style="color:var(--secondary); font-size:14px;">כמות: ${order[k]}</span>
-                    </div>
-                    ${imgUrl ? `<img src="${imgUrl}" class="summary-img">` : `<div class="summary-img" style="display:flex; align-items:center; justify-content:center;">📦</div>`}
-                </div>`;
-        });
+        if(keys.length === 0) { list.innerHTML = "<p style='opacity:0.5; padding:40px;'>אין חוסרים ברשימה</p>"; }
+        else {
+            keys.forEach(k => {
+                let imgUrl = "";
+                for(let cat in localData.products) {
+                    if(localData.products[cat][k]) imgUrl = localData.products[cat][k].img;
+                }
+                list.innerHTML += `
+                    <div class="summary-item">
+                        <div class="summary-right">
+                            ${imgUrl ? `<img src="${imgUrl}" class="summary-img">` : `<div class="summary-img" style="display:flex; align-items:center; justify-content:center;">📦</div>`}
+                            <div class="summary-text">
+                                <span class="summary-name">${k}</span>
+                                <span class="summary-qty">כמות: ${order[k]}</span>
+                            </div>
+                        </div>
+                        <button class="v-btn" onclick="db.ref('currentOrder/${k}').remove()">✓</button>
+                    </div>`;
+            });
+        }
         document.getElementById('summaryModal').style.display = 'block';
     }
 
+    function openAddModal() { document.getElementById('addModal').style.display = 'block'; }
+    function saveNewProduct() {
+        const cat = document.getElementById('addCat').value;
+        const name = document.getElementById('newName').value.trim();
+        const img = document.getElementById('newImg').value.trim();
+        const exp = document.getElementById('newExp').value;
+        if(name) db.ref(`products/${cat}/${name}`).set({ img, exp });
+        closeAllModals();
+    }
     function closeAllModals() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
 </script>
 </body>
