@@ -20,12 +20,7 @@
         .tab { flex: 1; text-align: center; padding: 14px; cursor: pointer; color: #888; border-bottom: 3px solid transparent; font-weight: bold; }
         .tab.active { color: var(--secondary); border-bottom-color: var(--secondary); background: #252525; }
         
-        .search-container { padding: 10px; }
-        #searchInput { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #333; background: var(--surface); color: #fff; box-sizing: border-box; font-size: 16px; outline: none; }
-
-        .shelf-container { display: none; padding: 10px; }
-        .shelf-container.active { display: block; }
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 10px; }
         
         .item { 
             background: var(--surface); border-radius: 12px; text-align: center; 
@@ -38,35 +33,28 @@
 
         .item-img { width: 100%; height: 80px; object-fit: cover; background: #2a2a2a; }
         .item-name { font-weight: bold; font-size: 12px; padding: 5px; flex-grow: 1; display: flex; align-items: center; justify-content: center; }
-        .delete-btn { position: absolute; top: 0; left: 0; background: rgba(0,0,0,0.6); color: var(--error); border: none; width: 32px; height: 32px; border-bottom-right-radius: 12px; font-size: 20px; z-index: 5; }
         .qty-badge { background: var(--secondary); color: #000; border-radius: 4px; font-size: 12px; margin: 0 5px 5px; padding: 2px; font-weight: bold; }
         .exp-tag { font-size: 10px; background: rgba(0,0,0,0.6); margin-bottom: 4px; border-radius: 4px; padding: 1px; font-weight: bold; }
 
         /* מודלים */
         .modal { display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); backdrop-filter: blur(5px); }
-        .modal-content { background: var(--surface); margin: 5% auto; padding: 20px; border-radius: 20px; width: 92%; max-width: 400px; text-align: center; border: 1px solid #444; box-sizing: border-box; }
+        .modal-content { background: var(--surface); margin: 10% auto; padding: 20px; border-radius: 20px; width: 90%; max-width: 380px; text-align: center; border: 1px solid #444; box-sizing: border-box; }
         
-        /* עיצוב רשימת הסיכום בתוך המודל */
-        #summaryList { margin-top: 15px; max-height: 50vh; overflow-y: auto; padding: 5px; }
-        .summary-item { 
-            display: flex; align-items: center; background: #2a2a2a; 
-            margin-bottom: 12px; padding: 10px; border-radius: 15px; 
-            border: 1px solid #3d3d3d; box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-        .summary-right { display: flex; align-items: center; flex: 1; text-align: right; }
-        .summary-img { width: 55px; height: 55px; object-fit: cover; border-radius: 10px; margin-left: 12px; border: 1px solid #444; }
-        .summary-info { display: flex; flex-direction: column; }
-        .summary-name { font-weight: bold; font-size: 15px; color: #fff; line-height: 1.2; }
-        .summary-qty { color: var(--secondary); font-size: 14px; margin-top: 4px; font-weight: bold; }
-        .v-btn { 
-            background: var(--secondary); color: black; border: none; 
-            width: 40px; height: 40px; border-radius: 50%; 
-            font-size: 18px; cursor: pointer; flex-shrink: 0; margin-right: 10px;
-        }
+        /* עיצוב המקלדת המהירה */
+        .quick-qty-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
+        .btn-qty { background: #333; color: var(--secondary); border: 1px solid #444; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 18px; cursor: pointer; }
+        .btn-qty:active { background: var(--secondary); color: black; }
 
+        .modal-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #444; background: #121212; color: white; text-align: center; font-size: 16px; box-sizing: border-box; }
+        
         .btn-confirm { width: 100%; background: var(--secondary); color: black; border: none; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; }
-        .btn-danger { background: var(--error); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; }
         .btn-cancel { width: 100%; background: transparent; color: #888; border: none; padding: 10px; cursor: pointer; }
+
+        /* סיכום */
+        .summary-item { display: flex; align-items: center; background: #2a2a2a; margin-bottom: 10px; padding: 10px; border-radius: 15px; border: 1px solid #3d3d3d; }
+        .summary-right { display: flex; align-items: center; flex: 1; text-align: right; }
+        .summary-img { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; margin-left: 10px; }
+        .v-btn { background: var(--secondary); color: black; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; cursor: pointer; }
 
         .footer { position: fixed; bottom: 0; width: 100%; background: var(--surface); padding: 15px; border-top: 1px solid #333; z-index: 90; box-sizing: border-box; }
         .summary-btn { background: var(--primary); color: #000; padding: 16px; border-radius: 15px; border: none; font-weight: bold; width: 100%; cursor: pointer; }
@@ -82,34 +70,41 @@
     <div class="tab" onclick="showTab('general', this)">כללי</div>
 </div>
 
-<div class="search-container">
-    <input type="text" id="searchInput" placeholder="חפש מוצר..." oninput="renderUI()">
-</div>
-
 <div id="snacks" class="shelf-container active"><div class="grid" id="grid-snacks"></div></div>
 <div id="cigarettes" class="shelf-container"><div class="grid" id="grid-cigarettes"></div></div>
 <div id="general" class="shelf-container"><div class="grid" id="grid-general"></div></div>
 
-<div style="text-align:center; margin: 20px;"><button class="btn-confirm" style="width:auto; padding:10px 40px; background:#3700b3; color:white;" onclick="openAddModal()">+ הוסף מוצר חדש</button></div>
-
-<div id="summaryModal" class="modal">
+<div id="qtyModal" class="modal">
     <div class="modal-content">
-        <div style="color:var(--primary); font-weight:bold; margin-bottom:10px; font-size:1.6em;">📋 רשימת הזמנה</div>
-        <div id="summaryList"></div>
-        <div style="margin-top:20px; border-top: 1px solid #333; padding-top: 15px; display:flex; flex-direction:column; gap:10px;">
-            <button class="btn-danger" onclick="clearAllOrders()">🗑️ נקה את כל הרשימה</button>
-            <button class="btn-confirm" style="background:#333; color:white;" onclick="closeAllModals()">חזור לתפריט</button>
+        <div id="qtyTitle" style="color:var(--primary); font-weight:bold; font-size:1.4em;">שם המוצר</div>
+        
+        <div class="quick-qty-grid">
+            <button class="btn-qty" onclick="setQuickQty('1')">1</button>
+            <button class="btn-qty" onclick="setQuickQty('2')">2</button>
+            <button class="btn-qty" onclick="setQuickQty('3')">3</button>
+            <button class="btn-qty" onclick="setQuickQty('4')">4</button>
+            <button class="btn-qty" onclick="setQuickQty('5')">5</button>
+            <button class="btn-qty" onclick="setQuickQty('6')">6</button>
         </div>
+
+        <input type="number" id="qtyInput" class="modal-input" placeholder="או הקלד כמות אחרת...">
+        
+        <div style="text-align:right; font-size:14px; color:var(--primary); margin-top:10px;">תאריך תפוגה:</div>
+        <input type="date" id="expInput" class="modal-input">
+        
+        <button class="btn-confirm" id="qtyConfirmBtn">שמור עדכון</button>
+        <button class="btn-cancel" onclick="closeAllModals()">ביטול</button>
     </div>
 </div>
 
-<div id="qtyModal" class="modal">
+<div id="summaryModal" class="modal">
     <div class="modal-content">
-        <div id="qtyTitle" style="color:var(--primary); font-weight:bold; font-size:1.4em; margin-bottom:15px;"></div>
-        <input type="text" id="qtyInput" class="modal-input" placeholder="כמות חסרה...">
-        <input type="date" id="expInput" class="modal-input">
-        <button class="btn-confirm" id="qtyConfirmBtn">עדכן</button>
-        <button class="btn-cancel" onclick="closeAllModals()">ביטול</button>
+        <div style="color:var(--primary); font-weight:bold; margin-bottom:15px; font-size:1.5em;">📦 רשימת חוסרים</div>
+        <div id="summaryList" style="max-height:50vh; overflow-y:auto;"></div>
+        <div style="margin-top:20px; display:flex; flex-direction:column; gap:10px;">
+            <button class="btn-confirm" style="background: var(--error); color: white;" onclick="clearAllOrders()">🗑️ נקה את כל הרשימה</button>
+            <button class="btn-confirm" style="background:#333; color:white;" onclick="closeAllModals()">סגור</button>
+        </div>
     </div>
 </div>
 
@@ -144,7 +139,6 @@
     }
 
     function renderUI() {
-        const search = document.getElementById('searchInput').value.toLowerCase();
         const today = new Date();
         const nextMonth = new Date(); nextMonth.setMonth(today.getMonth() + 1);
 
@@ -162,7 +156,6 @@
             });
 
             sorted.forEach(name => {
-                if (!name.toLowerCase().includes(search)) return;
                 const p = catProds[name];
                 const qty = (localData.currentOrder && localData.currentOrder[name]) ? localData.currentOrder[name] : "";
                 
@@ -177,7 +170,6 @@
                 div.className = `item ${qty ? 'has-qty' : ''} ${expClass}`;
                 div.onclick = () => openQtyModal(cat, name, p.exp || '', qty);
                 div.innerHTML = `
-                    <button class="delete-btn" onclick="askDelete('${cat}','${name}',event)">×</button>
                     ${p.img ? `<img src="${p.img}" class="item-img">` : `<div style="height:80px; display:flex; align-items:center; justify-content:center; font-size:30px;">📦</div>`}
                     <div class="item-name">${name}</div>
                     ${p.exp ? `<div class="exp-tag" style="color:${expClass=='exp-expired'?'var(--error)':'var(--warning)'}">${formatDate(p.exp)}</div>` : ''}
@@ -188,47 +180,12 @@
         });
     }
 
-    function clearAllOrders() {
-        if(confirm("למחוק את כל רשימת החוסרים שסימנת?")) {
-            db.ref('currentOrder').set(null).then(() => {
-                closeAllModals();
-            });
-        }
-    }
-
-    function showSummary() {
-        const list = document.getElementById('summaryList');
-        list.innerHTML = '';
-        const order = localData.currentOrder || {};
-        const keys = Object.keys(order);
-        
-        if(keys.length === 0) { 
-            list.innerHTML = "<p style='padding:30px; opacity:0.5; font-size:18px;'>אין מוצרים חסרים</p>"; 
-        } else {
-            keys.forEach(k => {
-                let imgUrl = "";
-                for(let cat in localData.products) { if(localData.products[cat][k]) imgUrl = localData.products[cat][k].img; }
-                list.innerHTML += `
-                    <div class="summary-item">
-                        <div class="summary-right">
-                            ${imgUrl ? `<img src="${imgUrl}" class="summary-img">` : `<div class="summary-img" style="display:flex; align-items:center; justify-content:center; background:#444;">📦</div>`}
-                            <div class="summary-info">
-                                <span class="summary-name">${k}</span>
-                                <span class="summary-qty">חסר: ${order[k]}</span>
-                            </div>
-                        </div>
-                        <button class="v-btn" onclick="db.ref('currentOrder/${k}').remove()">✓</button>
-                    </div>`;
-            });
-        }
-        document.getElementById('summaryModal').style.display = 'block';
-    }
-
     function openQtyModal(cat, name, exp, qty) {
         document.getElementById('qtyTitle').innerText = name;
         document.getElementById('qtyInput').value = qty;
         document.getElementById('expInput').value = exp;
         document.getElementById('qtyModal').style.display = 'block';
+        
         document.getElementById('qtyConfirmBtn').onclick = () => {
             const q = document.getElementById('qtyInput').value.trim();
             const e = document.getElementById('expInput').value;
@@ -238,12 +195,43 @@
         };
     }
 
-    function askDelete(cat, name, e) {
-        e.stopPropagation();
-        if(confirm(`למחוק את ${name} לצמיתות?`)) {
-            db.ref(`products/${cat}/${name}`).remove();
-            db.ref(`currentOrder/${name}`).remove();
+    function setQuickQty(v) {
+        document.getElementById('qtyInput').value = v;
+        // שומר אוטומטית אחרי לחיצה על מספר מהיר לחיסכון בזמן
+        document.getElementById('qtyConfirmBtn').click();
+    }
+
+    function clearAllOrders() {
+        if(confirm("למחוק את כל רשימת החוסרים?")) {
+            db.ref('currentOrder').set(null);
+            closeAllModals();
         }
+    }
+
+    function showSummary() {
+        const list = document.getElementById('summaryList');
+        list.innerHTML = '';
+        const order = localData.currentOrder || {};
+        const keys = Object.keys(order);
+        if(keys.length === 0) { list.innerHTML = "<p style='padding:20px; opacity:0.5;'>אין חוסרים</p>"; }
+        else {
+            keys.forEach(k => {
+                let imgUrl = "";
+                for(let cat in localData.products) { if(localData.products[cat][k]) imgUrl = localData.products[cat][k].img; }
+                list.innerHTML += `
+                    <div class="summary-item">
+                        <div class="summary-right">
+                            ${imgUrl ? `<img src="${imgUrl}" class="summary-img">` : `<div class="summary-img">📦</div>`}
+                            <div style="display:flex; flex-direction:column;">
+                                <span style="font-weight:bold;">${k}</span>
+                                <span style="color:var(--secondary); font-size:14px;">כמות: ${order[k]}</span>
+                            </div>
+                        </div>
+                        <button class="v-btn" onclick="db.ref('currentOrder/${k}').remove()">✓</button>
+                    </div>`;
+            });
+        }
+        document.getElementById('summaryModal').style.display = 'block';
     }
 
     function showTab(cat, el) {
@@ -253,7 +241,6 @@
         document.getElementById(cat).classList.add('active');
     }
     function closeAllModals() { document.querySelectorAll('.modal').forEach(m => m.style.display='none'); }
-    function openAddModal() { /* הוספת קוד למודל הוספה אם נדרש */ }
 </script>
 </body>
 </html>
