@@ -3,37 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ניהול חובות עם היסטוריה</title>
+    <title>ניהול חובות לקוחות</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; padding: 20px; font-family: system-ui; }
-        .card { border-radius: 15px; border: none; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 15px; }
-        .total-box { background: #212529; color: white; padding: 20px; border-radius: 12px; margin-bottom: 25px; }
-        .history-list { font-size: 0.85rem; max-height: 100px; overflow-y: auto; background: #fff; border-radius: 5px; padding: 5px; margin-top: 10px; border: 1px solid #eee; }
-        .debt-card { border-right: 6px solid #dc3545 !important; }
+        body { background-color: #f1f3f5; padding-bottom: 80px; font-family: 'Segoe UI', system-ui, sans-serif; }
+        .total-box { background: linear-gradient(135deg, #212529 0%, #343a40 100%); color: white; padding: 25px; border-radius: 0 0 20px 20px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .card { border-radius: 15px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.05); transition: 0.3s; }
+        .debt-card { border-right: 6px solid #e63946 !important; }
+        
+        /* כפתור הוספה צף */
+        .fab { position: fixed; bottom: 25px; left: 25px; width: 60px; height: 60px; background-color: #0d6efd; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; box-shadow: 0 4px 15px rgba(13, 110, 253, 0.4); cursor: pointer; border: none; z-index: 1000; }
+        
+        .history-section { display: none; background: #f8f9fa; border-radius: 8px; padding: 10px; margin-top: 10px; font-size: 0.85rem; border: 1px solid #e9ecef; }
+        .btn-action { border-radius: 8px; font-weight: 500; font-size: 0.9rem; }
+        
+        /* טופס מוסתר */
+        #addCustomerSection { display: none; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="total-box text-center shadow">
-        <h2 class="mb-0">סה"כ חובות: <span id="totalDebtDisplay">₪0</span></h2>
-    </div>
+<div class="total-box text-center">
+    <p class="text-uppercase mb-1" style="opacity: 0.8; letter-spacing: 1px;">סה"כ חובות בעסק</p>
+    <h1 class="display-4 fw-bold" id="totalDebtDisplay">₪0</h1>
+</div>
 
-    <div class="card shadow-sm mb-4">
+<div class="container">
+    <div id="addCustomerSection" class="card shadow-sm animate__animated animate__fadeIn">
         <div class="card-body">
-            <h5 class="card-title mb-3">רישום חוב חדש</h5>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="card-title mb-0">הוספת לקוח/חוב חדש</h5>
+                <button class="btn-close" onclick="toggleAddForm()"></button>
+            </div>
             <div class="row g-2">
-                <div class="col-md-4"><input type="text" id="custName" class="form-control" placeholder="שם הלקוח"></div>
-                <div class="col-md-3"><input type="number" id="amount" class="form-control" placeholder="סכום"></div>
-                <div class="col-md-3"><input type="text" id="note" class="form-control" placeholder="תיאור קצר"></div>
-                <div class="col-md-2"><button onclick="saveToFirebase()" class="btn btn-primary w-100">שמור</button></div>
+                <div class="col-12 col-md-4"><input type="text" id="custName" class="form-control" placeholder="שם הלקוח"></div>
+                <div class="col-6 col-md-3"><input type="number" id="amount" class="form-control" placeholder="סכום"></div>
+                <div class="col-6 col-md-3"><input type="text" id="note" class="form-control" placeholder="תיאור"></div>
+                <div class="col-12 col-md-2"><button onclick="saveToFirebase()" class="btn btn-primary w-100">שמור</button></div>
             </div>
         </div>
     </div>
 
-    <div id="debtContainer" class="row"></div>
+    <div class="mb-4">
+        <input type="text" id="searchBox" class="form-control form-control-lg shadow-sm" placeholder="חפש לקוח ברשימה..." onkeyup="filterDebts()">
+    </div>
+
+    <div id="debtContainer" class="row g-3"></div>
 </div>
+
+<button class="fab" onclick="toggleAddForm()">+</button>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -53,50 +71,44 @@
     const db = getDatabase(app);
     const debtsRef = ref(db, 'debts');
 
-    // שמירת חוב ראשוני
+    // פתיחה/סגירה של הטופס
+    window.toggleAddForm = function() {
+        const section = document.getElementById('addCustomerSection');
+        section.style.display = section.style.display === 'block' ? 'none' : 'block';
+        if(section.style.display === 'block') document.getElementById('custName').focus();
+    };
+
     window.saveToFirebase = function() {
         const name = document.getElementById('custName').value.trim();
         const amt = parseFloat(document.getElementById('amount').value);
         const note = document.getElementById('note').value.trim();
 
-        if (!name || isNaN(amt)) return alert("מלא שם וסכום תקין");
+        if (!name || isNaN(amt)) return alert("נא למלא שם וסכום");
 
-        const firstLog = `${new Date().toLocaleDateString('he-IL')}: פתיחת חוב ₪${amt} (${note || 'ללא תיאור'})`;
-
+        const date = new Date().toLocaleDateString('he-IL');
         push(debtsRef, {
             customer: name,
             price: amt,
-            history: [firstLog],
-            date: new Date().toLocaleDateString('he-IL')
+            history: [`${date}: פתיחת חוב ₪${amt} (${note || 'ללא תיאור'})`],
+            date: date
         }).then(() => {
+            toggleAddForm();
             document.getElementById('custName').value = '';
             document.getElementById('amount').value = '';
             document.getElementById('note').value = '';
         });
     };
 
-    // עדכון חוב (תשלום חלקי או הוספה)
     window.updateDebt = function(id, currentData) {
-        const action = prompt("בחר פעולה:\n1. תשלום (יוריד מהחוב)\n2. הוספת קנייה (יוסיף לחוב)", "1");
-        if (!action) return;
+        const val = parseFloat(prompt("הזן סכום לשינוי (₪):\n(השתמש במינוס כדי להפחית חוב, למשל: -20)"));
+        if (isNaN(val)) return;
 
-        const val = parseFloat(prompt("הזן סכום (₪):"));
-        if (isNaN(val)) return alert("סכום לא תקין");
-
-        let newTotal = currentData.price;
-        let logMsg = "";
+        const newTotal = currentData.price + val;
         const date = new Date().toLocaleDateString('he-IL');
-
-        if (action === "1") {
-            newTotal -= val;
-            logMsg = `${date}: שולם ₪${val}. יתרה: ₪${newTotal.toFixed(2)}`;
-        } else {
-            newTotal += val;
-            logMsg = `${date}: נוספה קנייה ב-₪${val}. יתרה: ₪${newTotal.toFixed(2)}`;
-        }
-
+        const actionText = val > 0 ? `הוספה של ₪${val}` : `תשלום של ₪${Math.abs(val)}`;
+        
         const newHistory = currentData.history || [];
-        newHistory.push(logMsg);
+        newHistory.push(`${date}: ${actionText}. יתרה: ₪${newTotal.toFixed(2)}`);
 
         update(ref(db, `debts/${id}`), {
             price: newTotal,
@@ -104,8 +116,21 @@
         });
     };
 
+    window.toggleHistory = function(id) {
+        const el = document.getElementById('hist-' + id);
+        el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    };
+
     window.deleteItem = function(id) {
         if(confirm("למחוק את כל כרטיס הלקוח?")) remove(ref(db, `debts/${id}`));
+    };
+
+    window.filterDebts = function() {
+        const query = document.getElementById('searchBox').value.toLowerCase();
+        document.querySelectorAll('.customer-col').forEach(el => {
+            const name = el.getAttribute('data-name').toLowerCase();
+            el.style.display = name.includes(query) ? 'block' : 'none';
+        });
     };
 
     onValue(debtsRef, (snapshot) => {
@@ -118,26 +143,29 @@
             Object.keys(data).forEach(key => {
                 const item = data[key];
                 totalSum += item.price;
-                const historyHtml = (item.history || []).map(line => `<li>${line}</li>`).join('');
+                const historyLines = (item.history || []).map(line => `<li>• ${line}</li>`).join('');
                 
                 container.innerHTML += `
-                    <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="col-md-6 col-lg-4 customer-col" data-name="${item.customer}">
                         <div class="card shadow-sm debt-card h-100">
                             <div class="card-body">
-                                <div class="d-flex justify-content-between">
-                                    <h5 class="fw-bold text-dark">${item.customer}</h5>
-                                    <span class="badge bg-danger fs-6">₪${item.price.toFixed(2)}</span>
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="fw-bold mb-0">${item.customer}</h5>
+                                    <div class="text-end">
+                                        <div class="badge bg-danger fs-5 shadow-sm">₪${item.price.toFixed(2)}</div>
+                                    </div>
                                 </div>
                                 
-                                <div class="history-list">
-                                    <ul class="list-unstyled mb-0">${historyHtml}</ul>
+                                <div class="d-grid gap-2">
+                                    <div class="d-flex gap-2">
+                                        <button onclick='updateDebt("${key}", ${JSON.stringify(item)})' class="btn btn-warning btn-action flex-grow-1">עדכון חוב</button>
+                                        <button onclick="toggleHistory('${key}')" class="btn btn-light btn-action border">👁 תצוגה</button>
+                                    </div>
+                                    <div id="hist-${key}" class="history-section">
+                                        <ul class="list-unstyled mb-0">${historyLines}</ul>
+                                    </div>
+                                    <button onclick="deleteItem('${key}')" class="btn btn-outline-secondary btn-sm border-0 mt-2">סגירת חשבון ומחיקה</button>
                                 </div>
-
-                                <div class="d-flex gap-2 mt-3">
-                                    <button onclick='updateDebt("${key}", ${JSON.stringify(item)})' class="btn btn-sm btn-warning flex-grow-1">עדכון / תשלום</button>
-                                    <button onclick="deleteItem('${key}')" class="btn btn-sm btn-outline-success">סגור הכל</button>
-                                </div>
-                                <a href="https://wa.me/?text=${encodeURIComponent('היי ' + item.customer + ', יתרת החוב המעודכנת שלך היא ₪' + item.price.toFixed(2))}" target="_blank" class="btn btn-sm btn-outline-primary w-100 mt-2">שלח וואטסאפ</a>
                             </div>
                         </div>
                     </div>
