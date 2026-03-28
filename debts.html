@@ -7,15 +7,16 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f8f9fa; padding: 20px; }
-        .card { margin-bottom: 15px; border-radius: 12px; border: none; shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .card { margin-bottom: 15px; border-radius: 12px; border: none; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
         .total-box { background: #343a40; color: white; padding: 20px; border-radius: 10px; margin-bottom: 25px; }
+        .debt-card { border-right: 5px solid #dc3545 !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="total-box text-center shadow">
-        <h2 class="mb-0">סה"כ חובות: <span id="totalDebtDisplay">₪0</span></h2>
+        <h2 class="mb-0">סה"כ חובות פתוחים: <span id="totalDebtDisplay">₪0</span></h2>
     </div>
 
     <div class="card shadow-sm">
@@ -32,7 +33,7 @@
                     <input type="text" id="note" class="form-control" placeholder="פירוט (אופציונלי)">
                 </div>
                 <div class="col-md-2">
-                    <button onclick="saveToFirebase()" class="btn btn-primary w-100">שמור חוב</button>
+                    <button id="saveBtn" onclick="saveToFirebase()" class="btn btn-primary w-100">שמור חוב</button>
                 </div>
             </div>
         </div>
@@ -49,7 +50,6 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // --- החלף כאן בפרטים שלך מה-Firebase Console ---
     const firebaseConfig = {
         apiKey: "AIzaSyBrAIYc9yqbLvCN-0nKmls_vPsTaj6wuNo",
         authDomain: "kiosk-inventory.firebaseapp.com",
@@ -60,48 +60,51 @@
         appId: "1:25251506880:web:939df03d8ee032d52adb25"
     };
 
-    // אתחול פיירבייס
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const debtsRef = ref(db, 'debts'); // תיקיית חובות
+    const debtsRef = ref(db, 'debts');
 
-    // פונקציה לשמירת חוב
     window.saveToFirebase = function() {
-        const name = document.getElementById('custName').value;
+        const name = document.getElementById('custName').value.trim();
         const amt = document.getElementById('amount').value;
-        const note = document.getElementById('note').value;
+        const note = document.getElementById('note').value.trim();
 
         if (!name || !amt) {
             alert("נא להזין שם וסכום");
             return;
         }
 
+        const saveBtn = document.getElementById('saveBtn');
+        saveBtn.disabled = true; // מניעת לחיצות כפולות
+
         push(debtsRef, {
             customer: name,
             price: parseFloat(amt),
             details: note,
-            date: new Date().toLocaleDateString('he-IL')
+            date: new Date().toLocaleDateString('he-IL'),
+            timestamp: Date.now()
         }).then(() => {
-            // ניקוי שדות אחרי הצלחה
             document.getElementById('custName').value = '';
             document.getElementById('amount').value = '';
             document.getElementById('note').value = '';
-        }).catch(err => alert("שגיאה: " + err.message));
+            saveBtn.disabled = false;
+        }).catch(err => {
+            alert("שגיאה בשמירה: " + err.message);
+            saveBtn.disabled = false;
+        });
     };
 
-    // פונקציה למחיקת חוב (תשלום)
     window.deleteItem = function(id) {
         if(confirm("האם החוב שולם?")) {
             remove(ref(db, 'debts/' + id));
         }
     };
 
-    // האזנה לנתונים בזמן אמת מהפירבייס
     onValue(debtsRef, (snapshot) => {
         const data = snapshot.val();
         const container = document.getElementById('debtContainer');
         let totalSum = 0;
-        container.innerHTML = ""; // ניקוי הרשימה לפני ריענון
+        container.innerHTML = ""; 
 
         if (data) {
             Object.keys(data).forEach(key => {
@@ -109,14 +112,17 @@
                 totalSum += item.price;
                 
                 container.innerHTML += `
-                    <div class="col-md-4">
-                        <div class="card shadow-sm border-start border-danger border-4">
+                    <div class="col-md-4 mb-3">
+                        <div class="card shadow-sm debt-card h-100">
                             <div class="card-body">
-                                <div class="d-flex justify-content-between">
-                                    <h5 class="card-title">${item.customer}</h5>
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="card-title mb-0">${item.customer}</h5>
                                     <span class="badge bg-danger fs-6">₪${item.price}</span>
                                 </div>
-                                <p class="card-text text-muted small">${item.details || 'ללא פירוט'}<br>${item.date}</p>
+                                <p class="card-text text-muted small mb-3">
+                                    ${item.details || 'ללא פירוט'}<br>
+                                    <span class="text-secondary">${item.date}</span>
+                                </p>
                                 <button onclick="deleteItem('${key}')" class="btn btn-sm btn-outline-success w-100">סגור חוב (שולם)</button>
                             </div>
                         </div>
@@ -124,7 +130,7 @@
                 `;
             });
         } else {
-            container.innerHTML = "<p class="text-center">אין חובות פתוחים כרגע.</p>";
+            container.innerHTML = '<div class="col-12 text-center text-muted"><p>אין חובות פתוחים כרגע.</p></div>';
         }
         document.getElementById('totalDebtDisplay').innerText = "₪" + totalSum.toLocaleString();
     });
